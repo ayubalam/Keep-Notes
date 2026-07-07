@@ -58,7 +58,7 @@ export default function NoteCard({ note, onUpdate, onDelete, onEditClick, search
                 e.stopPropagation()
                 onUpdate({ ...note, isPinned: !note.isPinned })
               }}
-              className={`text-lg transition-colors ${note.isPinned ? 'text-yellow-500' : 'text-gray-300 hover:text-gray-500'}`}
+              
             >
               📌
             </button>

@@ -15,8 +15,21 @@ export default function App() {
   const [selectedColor, setSelectedColor] = useState('#ffffff')
   const [selectedNoteIds, setSelectedNoteIds] = useState([])
   
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [darkMode, setDarkMode] = useState(localStorage.getItem('theme') === 'dark')
+  
   const API_URL = 'http://localhost:5000/api/notes'
   const colors = ['#ffffff', '#f28b82', '#fbbc04', '#fff475', '#ccff90', '#a7ffeb', '#cbf0f8', '#aecbfa', '#d7aefb']
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }, [darkMode])
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token')
@@ -46,8 +59,6 @@ export default function App() {
     }
   }, [token, handleLogout])
 
-  // Single safe state synchronization effect for initial data loading
- // Single safe state synchronization effect for initial data loading
   useEffect(() => {
     if (token) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -55,10 +66,10 @@ export default function App() {
     }
   }, [token, fetchNotes])
 
-  // FIX: Custom handler to safely reset selection IDs inline when changing workspace tabs
   const handleTabChange = (tabId) => {
     setSelectedNoteIds([])
     setCurrentTab(tabId)
+    setIsDrawerOpen(false)
   }
 
   const handleAuthSuccess = () => {
@@ -237,15 +248,31 @@ export default function App() {
   const emptyStateConfig = {
     notes: { icon: '💡', text: 'Notes you add appear here' },
     archive: { icon: '📥', text: 'Your archived notes appear here' },
-    trash: { icon: '🗑️', text: 'No notes in Trash' }
+    trash: { icon: '🗑️', text: 'No notes in Deleted folder' }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans antialiased pb-24 md:pb-6">
-      <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} onLogout={handleLogout} />
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans antialiased pb-24 md:pb-6 transition-colors duration-200">
+      
+      {/* Top Header/Navbar Section */}
+      <div className="flex items-center bg-white border-b border-gray-200 px-4">
+        <button 
+          onClick={() => setIsDrawerOpen(true)}
+          className="p-2 mr-2 text-gray-600 hover:bg-gray-100 rounded-full focus:outline-none"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <div className="flex-1">
+          <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} onLogout={handleLogout} />
+        </div>
+      </div>
       
       <div className="flex flex-1">
-        <Sidebar currentTab={currentTab} setCurrentTab={handleTabChange} counts={sidebarCounts} />
+        <div className="hidden md:block">
+          <Sidebar currentTab={currentTab} setCurrentTab={handleTabChange} counts={sidebarCounts} />
+        </div>
         
         <main className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full">
           {currentTab === 'notes' && (
@@ -288,15 +315,15 @@ export default function App() {
           )}
 
           {currentTab === 'trash' && viewNotes.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 animate-fade-in text-center">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 text-center">
               <p className="text-amber-800 text-sm font-medium">
-                Notes in Trash will persist until emptied permanently.
+                Notes in Deleted will persist until emptied permanently.
               </p>
               <button 
                 onClick={handleEmptyTrashAll}
                 className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors"
               >
-                💥 Empty Trash Now
+                💥 Empty Deleted Now
               </button>
             </div>
           )}
@@ -358,35 +385,82 @@ export default function App() {
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 z-40 px-2 shadow-lg">
-        {[
-          { id: 'notes', label: 'Notes', icon: '💡', count: sidebarCounts.notes },
-          { id: 'archive', label: 'Archive', icon: '📥', count: sidebarCounts.archive },
-          { id: 'trash', label: 'Trash', icon: '🗑️', count: sidebarCounts.trash }
-        ].map(item => {
-          const isActive = currentTab === item.id
-          return (
-            <button 
-              key={item.id}
-              onClick={() => handleTabChange(item.id)}
-              className={`flex flex-col items-center justify-center flex-1 py-1 relative ${isActive ? 'text-yellow-600' : 'text-gray-500'}`}
-            >
-              <span className="text-xl">{item.icon}</span>
-              <span className="text-[10px] font-medium tracking-wide mt-0.5">{item.label}</span>
-              {item.count > 0 && (
-                <span className="absolute top-1 right-6 bg-red-500 text-white font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center scale-90">
-                  {item.count}
+      {/* Simplified Sliding Navigation Drawer Sheet */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex animate-fade-in">
+          <div 
+            onClick={() => setIsDrawerOpen(false)} 
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity" 
+          />
+          
+          <div className="relative w-72 max-w-xs bg-white h-full shadow-2xl flex flex-col p-4 z-50 transition-transform">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+              <span className="font-bold text-gray-800 text-lg tracking-wide pl-2">Google Keep Clone</span>
+              <button 
+                onClick={() => setIsDrawerOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Custom Filtered Nav List */}
+            <nav className="flex-1 space-y-1">
+              {[
+                { id: 'notes', label: 'Notes', icon: '💡', count: sidebarCounts.notes },
+                { id: 'archive', label: 'Archive', icon: '📥', count: sidebarCounts.archive },
+                { id: 'trash', label: 'Deleted', icon: '🗑️', count: sidebarCounts.trash }
+              ].map((item) => {
+                const isCurrent = currentTab === item.id
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleTabChange(item.id)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                      isCurrent 
+                        ? 'bg-yellow-50 text-yellow-700' 
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <span className="text-lg">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
+                    {item.count > 0 && (
+                      <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-bold">
+                        {item.count}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </nav>
+
+            {/* Dark Mode toggle layout */}
+            <div className="pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-xl">
+                <span className="text-xs font-semibold text-gray-500 tracking-wider uppercase">
+                  {darkMode ? '🌙 Dark Mode' : '☀️ Light Mode'}
                 </span>
-              )}
-            </button>
-          )
-        })}
-      </div>
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 dark:bg-yellow-500 transition-colors focus:outline-none"
+                >
+                  <span
+                    className={`${
+                      darkMode ? 'translate-x-6 bg-neutral-900' : 'translate-x-1 bg-white'
+                    } inline-block h-4 w-4 transform rounded-full transition-transform`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bulk Action Bar */}
       {selectedNoteIds.length > 0 && (
-        <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 md:px-6 py-3 rounded-xl shadow-xl flex items-center justify-between md:justify-start space-x-3 md:space-x-6 z-50 w-[92%] max-w-lg transition-all border border-gray-800">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 md:px-6 py-3 rounded-xl shadow-xl flex items-center justify-between md:justify-start space-x-3 md:space-x-6 z-50 w-[92%] max-w-lg transition-all border border-gray-800">
           <span className="text-xs md:text-sm font-medium text-gray-300 whitespace-nowrap">
             Selected <strong className="text-white font-semibold">{selectedNoteIds.length}</strong>
           </span>

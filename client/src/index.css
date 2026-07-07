@@ -1,1 +1,69 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Force Dark Mode Colors across all components when .dark is present */
+html.dark,
+html.dark body,
+html.dark #root {
+  background-color: #121212 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Fix Navbar background and borders */
+html.dark nav,
+html.dark .bg-white {
+  background-color: #1e1e1e !important;
+  border-color: #2e2e2e !important;
+}
+
+/* Fix Sidebar background and container dividers */
+html.dark aside,
+html.dark .border-b,
+html.dark .border-r,
+html.dark .border {
+  background-color: #1e1e1e !important;
+  border-color: #2e2e2e !important;
+}
+
+/* Fix Search Input Bar background and text colors */
+html.dark input,
+html.dark textarea,
+html.dark .bg-gray-100 {
+  background-color: #2c2c2c !important;
+  color: #ffffff !important;
+}
+
+/* Fix active selected sidebar navigation pills */
+html.dark .bg-yellow-50 {
+  background-color: rgba(250, 204, 21, 0.15) !important;
+  color: #facc15 !important;
+}
+
+/* Handle NoteCards (Only applies to default white notes so your color variants stay intact) */
+html.dark .bg-white:not([style*="background-color"]) {
+  background-color: #242424 !important;
+}
+
+/* Force text readability in dark mode */
+html.dark text,
+html.dark p,
+html.dark span,
+html.dark h2,
+html.dark h3,
+html.dark h1 {
+  color: #e5e7eb !important;
+}
+
+/* Keep gray layout icons descriptive and visible */
+html.dark .text-gray-400,
+html.dark .text-gray-500,
+html.dark .text-gray-600 {
+  color: #9ca3af !important;
+}
+
+/* Sliding navigation drawer sheet layout fallback */
+html.dark .fixed.bg-white {
+  background-color: #1e1e1e !important;
+}
