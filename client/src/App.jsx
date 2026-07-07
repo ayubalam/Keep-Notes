@@ -18,7 +18,9 @@ export default function App() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(localStorage.getItem('theme') === 'dark')
   
-  const API_URL = 'http://localhost:5000/api/notes'
+  const API_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api/notes` 
+  : 'http://localhost:5000/api/notes';
   const colors = ['#ffffff', '#f28b82', '#fbbc04', '#fff475', '#ccff90', '#a7ffeb', '#cbf0f8', '#aecbfa', '#d7aefb']
 
   useEffect(() => {
