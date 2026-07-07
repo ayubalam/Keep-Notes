@@ -80,6 +80,9 @@ export default function App() {
     note.content.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  const pinnedNotes = filteredNotes.filter(note => note.isPinned)
+  const regularNotes = filteredNotes.filter(note => !note.isPinned)
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans antialiased">
       <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
@@ -112,18 +115,43 @@ export default function App() {
 
           {filteredNotes.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
-              <p className="text-lg">No matching notes found</p>
+              <p className="text-lg">No notes found</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredNotes.map(note => (
-                <NoteCard 
-                  key={note._id} 
-                  note={note} 
-                  onDelete={handleDeleteNote} 
-                  onUpdate={handleUpdateNote} 
-                />
-              ))}
+            <div className="space-y-8">
+              {pinnedNotes.length > 0 && (
+                <div>
+                  <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1">Pinned</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pinnedNotes.map(note => (
+                      <NoteCard 
+                        key={note._id} 
+                        note={note} 
+                        onDelete={handleDeleteNote} 
+                        onUpdate={handleUpdateNote} 
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {regularNotes.length > 0 && (
+                <div>
+                  {pinnedNotes.length > 0 && (
+                    <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1">Others</h2>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {regularNotes.map(note => (
+                      <NoteCard 
+                        key={note._id} 
+                        note={note} 
+                        onDelete={handleDeleteNote} 
+                        onUpdate={handleUpdateNote} 
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </main>
