@@ -17,7 +17,6 @@ export default function App() {
   const API_URL = 'http://localhost:5000/api/notes'
   const colors = ['#ffffff', '#f28b82', '#fbbc04', '#fff475', '#ccff90', '#a7ffeb', '#cbf0f8', '#aecbfa', '#d7aefb']
 
-  // Declared first to satisfy dependency layout orders
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -132,6 +131,13 @@ export default function App() {
     return !note.isArchived && !note.isTrashed
   })
 
+  // Calculate true counts based on master collection states for the sidebar counters
+  const sidebarCounts = {
+    notes: notes.filter(n => !n.isArchived && !n.isTrashed).length,
+    archive: notes.filter(n => n.isArchived && !n.isTrashed).length,
+    trash: notes.filter(n => n.isTrashed).length
+  }
+
   const pinnedNotes = viewNotes.filter(note => note.isPinned)
   const regularNotes = viewNotes.filter(note => !note.isPinned)
 
@@ -146,7 +152,7 @@ export default function App() {
       <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} onLogout={handleLogout} />
       
       <div className="flex flex-1">
-        <Sidebar currentTab={currentTab} setCurrentTab={setCurrentTab} />
+        <Sidebar currentTab={currentTab} setCurrentTab={setCurrentTab} counts={sidebarCounts} />
         
         <main className="flex-1 p-6 md:p-8 max-w-6xl mx-auto w-full">
           {currentTab === 'notes' && (
