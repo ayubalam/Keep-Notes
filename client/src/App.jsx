@@ -19,8 +19,9 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(localStorage.getItem('theme') === 'dark')
   
   const API_URL = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL}/api/notes` 
-  : 'http://localhost:5000/api/notes';
+    ? `${import.meta.env.VITE_API_URL}/api/notes` 
+    : 'http://localhost:5000/api/notes'
+
   const colors = ['#ffffff', '#f28b82', '#fbbc04', '#fff475', '#ccff90', '#a7ffeb', '#cbf0f8', '#aecbfa', '#d7aefb']
 
   useEffect(() => {
@@ -59,14 +60,15 @@ export default function App() {
     } catch (error) {
       console.error('Error fetching notes:', error)
     }
-  }, [token, handleLogout])
+  }, [token, handleLogout, API_URL])
 
   useEffect(() => {
-    if (token) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+  if (token) {
+    (() => {
       fetchNotes()
-    }
-  }, [token, fetchNotes])
+    })()
+  }
+}, [token, fetchNotes])
 
   const handleTabChange = (tabId) => {
     setSelectedNoteIds([])
@@ -256,7 +258,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans antialiased pb-24 md:pb-6 transition-colors duration-200">
       
-      {/* Top Header/Navbar Section */}
       <div className="flex items-center bg-white border-b border-gray-200 px-4">
         <button 
           onClick={() => setIsDrawerOpen(true)}
@@ -387,7 +388,6 @@ export default function App() {
         </main>
       </div>
 
-      {/* Simplified Sliding Navigation Drawer Sheet */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 flex animate-fade-in">
           <div 
@@ -406,7 +406,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Custom Filtered Nav List */}
             <nav className="flex-1 space-y-1">
               {[
                 { id: 'notes', label: 'Notes', icon: '💡', count: sidebarCounts.notes },
@@ -438,7 +437,6 @@ export default function App() {
               })}
             </nav>
 
-            {/* Dark Mode toggle layout */}
             <div className="pt-4 border-t border-gray-100">
               <div className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-xl">
                 <span className="text-xs font-semibold text-gray-500 tracking-wider uppercase">
@@ -460,7 +458,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Bulk Action Bar */}
       {selectedNoteIds.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 md:px-6 py-3 rounded-xl shadow-xl flex items-center justify-between md:justify-start space-x-3 md:space-x-6 z-50 w-[92%] max-w-lg transition-all border border-gray-800">
           <span className="text-xs md:text-sm font-medium text-gray-300 whitespace-nowrap">
