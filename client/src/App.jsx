@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Navbar from './components/Navbar'
 import Sidebar from './components/Sidebar'
 import NoteCard from './components/NoteCard'
+import Auth from './components/Auth'
 
 export default function App() {
+  const [token, setToken] = useState(localStorage.getItem('token'))
   const [notes, setNotes] = useState([])
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -12,22 +14,43 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState('notes')
   const API_URL = 'http://localhost:5000/api/notes'
 
-  const fetchNotes = async () => {
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    setToken(null)
+    setNotes([])
+  }, [])
+
+  const fetchNotes = useCallback(async () => {
+    if (!token) return
     try {
-      const response = await fetch(API_URL)
+      const response = await fetch(API_URL, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
       const data = await response.json()
-      setNotes(data)
+      if (response.ok) {
+        // Wrapped in setTimeout to prevent synchronous state mutations during the effect call loop
+        setTimeout(() => setNotes(data), 0)
+      } else {
+        setTimeout(() => handleLogout(), 0)
+      }
     } catch (error) {
       console.error('Error fetching notes:', error)
     }
-  }
+  }, [token, handleLogout])
 
   useEffect(() => {
-    const loadData = async () => {
-      await fetchNotes()
+    if (token) {
+      fetchNotes()
     }
-    loadData()
-  }, [])
+  }, [token, fetchNotes])
+
+  const handleAuthSuccess = () => {
+    setToken(localStorage.getItem('token'))
+  }
 
   const handleCreateNote = async (e) => {
     e.preventDefault()
@@ -36,7 +59,10 @@ export default function App() {
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ title, content })
       })
       if (response.ok) {
@@ -52,7 +78,13 @@ export default function App() {
 
   const handleDeleteNote = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' })
+      const response = await fetch(`${API_URL}/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
       if (response.ok) {
         setNotes(notes.filter(note => note._id !== id))
       }
@@ -65,7 +97,10 @@ export default function App() {
     try {
       const response = await fetch(`${API_URL}/${updatedNote._id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(updatedNote)
       })
       if (response.ok) {
@@ -78,9 +113,13 @@ export default function App() {
     }
   }
 
+  if (!token) {
+    return <Auth onAuthSuccess={handleAuthSuccess} />
+  }
+
   const filteredNotes = notes.filter(note => 
-    note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    note.content.toLowerCase().includes(searchQuery.toLowerCase())
+    (note.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (note.content || '').toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const viewNotes = filteredNotes.filter(note => {
@@ -94,7 +133,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans antialiased">
-      <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} onLogout={handleLogout} />
       
       <div className="flex flex-1">
         <Sidebar currentTab={currentTab} setCurrentTab={setCurrentTab} />
