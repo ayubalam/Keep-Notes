@@ -17,6 +17,7 @@ export default function App() {
   const API_URL = 'http://localhost:5000/api/notes'
   const colors = ['#ffffff', '#f28b82', '#fbbc04', '#fff475', '#ccff90', '#a7ffeb', '#cbf0f8', '#aecbfa', '#d7aefb']
 
+  // Declared first to satisfy dependency layout orders
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -134,7 +135,6 @@ export default function App() {
   const pinnedNotes = viewNotes.filter(note => note.isPinned)
   const regularNotes = viewNotes.filter(note => !note.isPinned)
 
-  // Dynamic config map for custom empty states
   const emptyStateConfig = {
     notes: { icon: '💡', text: 'Notes you add appear here' },
     archive: { icon: '📥', text: 'Your archived notes appear here' },
@@ -210,6 +210,7 @@ export default function App() {
                         onDelete={handleDeleteNote} 
                         onUpdate={handleUpdateNote} 
                         onEditClick={setEditingNote}
+                        searchQuery={searchQuery}
                       />
                     ))}
                   </div>
@@ -229,6 +230,7 @@ export default function App() {
                         onDelete={handleDeleteNote} 
                         onUpdate={handleUpdateNote} 
                         onEditClick={setEditingNote}
+                        searchQuery={searchQuery}
                       />
                     ))}
                   </div>

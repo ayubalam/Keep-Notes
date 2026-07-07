@@ -1,5 +1,24 @@
-export default function NoteCard({ note, onUpdate, onDelete, onEditClick }) {
+export default function NoteCard({ note, onUpdate, onDelete, onEditClick, searchQuery = '' }) {
   const colors = ['#ffffff', '#f28b82', '#fbbc04', '#fff475', '#ccff90', '#a7ffeb', '#cbf0f8', '#aecbfa', '#d7aefb'];
+
+  const renderHighlightedText = (text, query) => {
+    if (!text) return "";
+    if (!query.trim()) return text;
+
+    // Fixed: Removed useless escape slash to pass strict ESLint criteria
+    const regex = new RegExp(`(${query.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+
+    return parts.map((part, index) => 
+      regex.test(part) ? (
+        <mark key={index} className="bg-yellow-200 text-gray-900 rounded-sm px-0.5 font-medium">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
+  };
 
   return (
     <div 
@@ -8,7 +27,9 @@ export default function NoteCard({ note, onUpdate, onDelete, onEditClick }) {
     >
       <div className="cursor-pointer" onClick={() => !note.isTrashed && onEditClick(note)}>
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-semibold text-gray-800 text-lg line-clamp-1">{note.title || "Untitled"}</h3>
+          <h3 className="font-semibold text-gray-800 text-lg line-clamp-1">
+            {note.title ? renderHighlightedText(note.title, searchQuery) : "Untitled"}
+          </h3>
           {!note.isTrashed && (
             <button 
               onClick={(e) => {
@@ -21,7 +42,9 @@ export default function NoteCard({ note, onUpdate, onDelete, onEditClick }) {
             </button>
           )}
         </div>
-        <p className="text-gray-600 text-sm whitespace-pre-wrap line-clamp-6">{note.content}</p>
+        <p className="text-gray-600 text-sm whitespace-pre-wrap line-clamp-6">
+          {renderHighlightedText(note.content, searchQuery)}
+        </p>
       </div>
 
       <div className="mt-4 pt-3 border-t border-gray-100/50 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
