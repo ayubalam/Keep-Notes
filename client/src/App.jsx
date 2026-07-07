@@ -12,7 +12,10 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [editingNote, setEditingNote] = useState(null)
   const [currentTab, setCurrentTab] = useState('notes')
+  const [selectedColor, setSelectedColor] = useState('#ffffff')
+  
   const API_URL = 'http://localhost:5000/api/notes'
+  const colors = ['#ffffff', '#f28b82', '#fbbc04', '#fff475', '#ccff90', '#a7ffeb', '#cbf0f8', '#aecbfa', '#d7aefb']
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token')
@@ -32,7 +35,6 @@ export default function App() {
       })
       const data = await response.json()
       if (response.ok) {
-        // Wrapped in setTimeout to prevent synchronous state mutations during the effect call loop
         setTimeout(() => setNotes(data), 0)
       } else {
         setTimeout(() => handleLogout(), 0)
@@ -63,13 +65,14 @@ export default function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ title, content })
+        body: JSON.stringify({ title, content, color: selectedColor })
       })
       if (response.ok) {
         const newNote = await response.json()
         setNotes([newNote, ...notes])
         setTitle('')
         setContent('')
+        setSelectedColor('#ffffff')
       }
     } catch (error) {
       console.error('Error creating note:', error)
@@ -140,22 +143,37 @@ export default function App() {
         
         <main className="flex-1 p-6 md:p-8 max-w-6xl mx-auto w-full">
           {currentTab === 'notes' && (
-            <form onSubmit={handleCreateNote} className="max-w-xl mx-auto bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-8 space-y-3">
+            <form 
+              onSubmit={handleCreateNote} 
+              style={{ backgroundColor: selectedColor }} 
+              className="max-w-xl mx-auto border border-gray-200 rounded-xl shadow-sm p-4 mb-8 space-y-3 transition-colors"
+            >
               <input 
                 type="text" 
                 placeholder="Title" 
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full font-medium text-gray-800 placeholder-gray-400 focus:outline-none"
+                className="w-full font-medium text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
               />
               <textarea 
                 placeholder="Take a note..." 
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={2}
-                className="w-full text-sm text-gray-600 placeholder-gray-400 focus:outline-none resize-none"
+                className="w-full text-sm text-gray-600 placeholder-gray-400 focus:outline-none resize-none bg-transparent"
               />
-              <div className="flex justify-end pt-2">
+              <div className="flex justify-between items-center pt-2">
+                <div className="flex space-x-1.5">
+                  {colors.map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      style={{ backgroundColor: c }}
+                      onClick={() => setSelectedColor(c)}
+                      className={`w-4 h-4 rounded-full border transition-transform hover:scale-110 ${selectedColor === c ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-300'}`}
+                    />
+                  ))}
+                </div>
                 <button type="submit" className="px-4 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white font-medium text-sm rounded-lg transition-colors shadow-sm">
                   Close
                 </button>
@@ -211,34 +229,50 @@ export default function App() {
 
       {editingNote && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white border border-gray-200 rounded-xl shadow-xl p-5 w-full max-w-lg space-y-4">
+          <div 
+            style={{ backgroundColor: editingNote.color || '#ffffff' }}
+            className="border border-gray-200 rounded-xl shadow-xl p-5 w-full max-w-lg space-y-4 transition-colors"
+          >
             <input 
               type="text" 
               value={editingNote.title}
               onChange={(e) => setEditingNote({ ...editingNote, title: e.target.value })}
-              className="w-full font-semibold text-gray-800 text-lg focus:outline-none"
+              className="w-full font-semibold text-gray-800 text-lg focus:outline-none bg-transparent"
               placeholder="Title"
             />
             <textarea 
               value={editingNote.content}
               onChange={(e) => setEditingNote({ ...editingNote, content: e.target.value })}
               rows={5}
-              className="w-full text-sm text-gray-600 focus:outline-none resize-none"
+              className="w-full text-sm text-gray-600 focus:outline-none resize-none bg-transparent"
               placeholder="Note text..."
             />
-            <div className="flex justify-end space-x-2 pt-2">
-              <button 
-                onClick={() => setEditingNote(null)}
-                className="px-4 py-2 hover:bg-gray-100 text-gray-600 text-sm font-medium rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => handleUpdateNote(editingNote)}
-                className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
-              >
-                Save Changes
-              </button>
+            <div className="flex justify-between items-center pt-2">
+              <div className="flex space-x-1.5">
+                {colors.map(c => (
+                  <button
+                    key={c}
+                    type="button"
+                    style={{ backgroundColor: c }}
+                    onClick={() => setEditingNote({ ...editingNote, color: c })}
+                    className={`w-4 h-4 rounded-full border transition-transform hover:scale-110 ${editingNote.color === c ? 'border-gray-900 ring-1 ring-gray-900' : 'border-gray-300'}`}
+                  />
+                ))}
+              </div>
+              <div className="flex space-x-2">
+                <button 
+                  onClick={() => setEditingNote(null)}
+                  className="px-4 py-2 hover:bg-black/5 text-gray-600 text-sm font-medium rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => handleUpdateNote(editingNote)}
+                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                >
+                  Save Changes
+                </button>
+              </div>
             </div>
           </div>
         </div>
