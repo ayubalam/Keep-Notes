@@ -9,9 +9,11 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://keep-notes-umber.vercel.app',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -23,7 +25,9 @@ app.use(cors({
       callback(new Error('Blocked by CORS policy'));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
