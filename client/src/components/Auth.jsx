@@ -7,6 +7,10 @@ export default function Auth({ onAuthSuccess }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL 
+    ? import.meta.env.VITE_API_URL 
+    : 'http://localhost:5000'
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -15,7 +19,7 @@ export default function Auth({ onAuthSuccess }) {
     const payload = isLogin ? { email, password } : { username, email, password }
 
     try {
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
