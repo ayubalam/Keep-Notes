@@ -134,6 +134,13 @@ export default function App() {
   const pinnedNotes = viewNotes.filter(note => note.isPinned)
   const regularNotes = viewNotes.filter(note => !note.isPinned)
 
+  // Dynamic config map for custom empty states
+  const emptyStateConfig = {
+    notes: { icon: '💡', text: 'Notes you add appear here' },
+    archive: { icon: '📥', text: 'Your archived notes appear here' },
+    trash: { icon: '🗑️', text: 'No notes in Trash' }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans antialiased">
       <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} onLogout={handleLogout} />
@@ -182,8 +189,13 @@ export default function App() {
           )}
 
           {viewNotes.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <p className="text-lg">No notes found in {currentTab}</p>
+            <div className="flex flex-col items-center justify-center text-center py-24 select-none animate-fade-in">
+              <span className="text-7xl mb-4 opacity-25">
+                {emptyStateConfig[currentTab]?.icon || '📝'}
+              </span>
+              <p className="text-gray-500 font-medium text-lg">
+                {emptyStateConfig[currentTab]?.text || 'No notes found'}
+              </p>
             </div>
           ) : (
             <div className="space-y-8">
