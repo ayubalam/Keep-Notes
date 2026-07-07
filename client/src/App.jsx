@@ -7,6 +7,7 @@ export default function App() {
   const [notes, setNotes] = useState([])
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const API_URL = 'http://localhost:5000/api/notes'
 
   const fetchNotes = async () => {
@@ -74,9 +75,14 @@ export default function App() {
     }
   }
 
+  const filteredNotes = notes.filter(note => 
+    note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    note.content.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans antialiased">
-      <Navbar />
+      <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       
       <div className="flex flex-1">
         <Sidebar />
@@ -104,13 +110,13 @@ export default function App() {
             </div>
           </form>
 
-          {notes.length === 0 ? (
+          {filteredNotes.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
-              <p className="text-lg">Notes you add appear here</p>
+              <p className="text-lg">No matching notes found</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {notes.map(note => (
+              {filteredNotes.map(note => (
                 <NoteCard 
                   key={note._id} 
                   note={note} 
