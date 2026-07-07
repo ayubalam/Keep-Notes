@@ -3,13 +3,12 @@ import Note from '../models/Note.js';
 
 const router = express.Router();
 
-// 1. CREATE a new note
 router.post('/', async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, color } = req.body;
     if (!content) return res.status(400).json({ message: 'Content is required' });
 
-    const newNote = new Note({ title, content });
+    const newNote = new Note({ title, content, color });
     const savedNote = await newNote.save();
     res.status(201).json(savedNote);
   } catch (error) {
@@ -17,7 +16,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// 2. READ all notes
 router.get('/', async (req, res) => {
   try {
     const notes = await Note.find().sort({ createdAt: -1 });
@@ -27,13 +25,12 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 3. UPDATE an existing note
 router.put('/:id', async (req, res) => {
   try {
-    const { title, content, isPinned } = req.body;
+    const { title, content, isPinned, color } = req.body;
     const updatedNote = await Note.findByIdAndUpdate(
       req.params.id,
-      { title, content, isPinned },
+      { title, content, isPinned, color },
       { new: true }
     );
     if (!updatedNote) return res.status(404).json({ message: 'Note not found' });
@@ -43,7 +40,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// 4. DELETE a note
 router.delete('/:id', async (req, res) => {
   try {
     const deletedNote = await Note.findByIdAndDelete(req.params.id);

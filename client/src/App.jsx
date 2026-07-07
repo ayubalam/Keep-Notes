@@ -8,6 +8,7 @@ export default function App() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [editingNote, setEditingNote] = useState(null)
   const API_URL = 'http://localhost:5000/api/notes'
 
   const fetchNotes = async () => {
@@ -69,6 +70,7 @@ export default function App() {
       if (response.ok) {
         const data = await response.json()
         setNotes(notes.map(note => note._id === data._id ? data : note))
+        setEditingNote(null)
       }
     } catch (error) {
       console.error('Error updating note:', error)
@@ -129,6 +131,7 @@ export default function App() {
                         note={note} 
                         onDelete={handleDeleteNote} 
                         onUpdate={handleUpdateNote} 
+                        onEditClick={setEditingNote}
                       />
                     ))}
                   </div>
@@ -147,6 +150,7 @@ export default function App() {
                         note={note} 
                         onDelete={handleDeleteNote} 
                         onUpdate={handleUpdateNote} 
+                        onEditClick={setEditingNote}
                       />
                     ))}
                   </div>
@@ -156,6 +160,41 @@ export default function App() {
           )}
         </main>
       </div>
+
+      {editingNote && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-xl p-5 w-full max-w-lg space-y-4">
+            <input 
+              type="text" 
+              value={editingNote.title}
+              onChange={(e) => setEditingNote({ ...editingNote, title: e.target.value })}
+              className="w-full font-semibold text-gray-800 text-lg focus:outline-none"
+              placeholder="Title"
+            />
+            <textarea 
+              value={editingNote.content}
+              onChange={(e) => setEditingNote({ ...editingNote, content: e.target.value })}
+              rows={5}
+              className="w-full text-sm text-gray-600 focus:outline-none resize-none"
+              placeholder="Note text..."
+            />
+            <div className="flex justify-end space-x-2 pt-2">
+              <button 
+                onClick={() => setEditingNote(null)}
+                className="px-4 py-2 hover:bg-gray-100 text-gray-600 text-sm font-medium rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => handleUpdateNote(editingNote)}
+                className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
