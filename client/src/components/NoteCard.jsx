@@ -16,7 +16,7 @@ export default function NoteCard({ note, onDelete, onUpdate }) {
 
       <div className="mt-4 pt-3 border-t border-gray-50 flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <button 
-          onClick={() => onDelete(note.id)}
+          onClick={() => onDelete(note._id)} 
           className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg text-sm transition-colors"
           title="Delete note"
         >
