@@ -9,6 +9,7 @@ export default function App() {
   const [content, setContent] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [editingNote, setEditingNote] = useState(null)
+  const [currentTab, setCurrentTab] = useState('notes')
   const API_URL = 'http://localhost:5000/api/notes'
 
   const fetchNotes = async () => {
@@ -82,42 +83,50 @@ export default function App() {
     note.content.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const pinnedNotes = filteredNotes.filter(note => note.isPinned)
-  const regularNotes = filteredNotes.filter(note => !note.isPinned)
+  const viewNotes = filteredNotes.filter(note => {
+    if (currentTab === 'trash') return note.isTrashed
+    if (currentTab === 'archive') return note.isArchived && !note.isTrashed
+    return !note.isArchived && !note.isTrashed
+  })
+
+  const pinnedNotes = viewNotes.filter(note => note.isPinned)
+  const regularNotes = viewNotes.filter(note => !note.isPinned)
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans antialiased">
       <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       
       <div className="flex flex-1">
-        <Sidebar />
+        <Sidebar currentTab={currentTab} setCurrentTab={setCurrentTab} />
         
         <main className="flex-1 p-6 md:p-8 max-w-6xl mx-auto w-full">
-          <form onSubmit={handleCreateNote} className="max-w-xl mx-auto bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-8 space-y-3">
-            <input 
-              type="text" 
-              placeholder="Title" 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full font-medium text-gray-800 placeholder-gray-400 focus:outline-none"
-            />
-            <textarea 
-              placeholder="Take a note..." 
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={2}
-              className="w-full text-sm text-gray-600 placeholder-gray-400 focus:outline-none resize-none"
-            />
-            <div className="flex justify-end pt-2">
-              <button type="submit" className="px-4 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white font-medium text-sm rounded-lg transition-colors shadow-sm">
-                Close
-              </button>
-            </div>
-          </form>
+          {currentTab === 'notes' && (
+            <form onSubmit={handleCreateNote} className="max-w-xl mx-auto bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-8 space-y-3">
+              <input 
+                type="text" 
+                placeholder="Title" 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full font-medium text-gray-800 placeholder-gray-400 focus:outline-none"
+              />
+              <textarea 
+                placeholder="Take a note..." 
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={2}
+                className="w-full text-sm text-gray-600 placeholder-gray-400 focus:outline-none resize-none"
+              />
+              <div className="flex justify-end pt-2">
+                <button type="submit" className="px-4 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white font-medium text-sm rounded-lg transition-colors shadow-sm">
+                  Close
+                </button>
+              </div>
+            </form>
+          )}
 
-          {filteredNotes.length === 0 ? (
+          {viewNotes.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
-              <p className="text-lg">No notes found</p>
+              <p className="text-lg">No notes found in {currentTab}</p>
             </div>
           ) : (
             <div className="space-y-8">

@@ -27,10 +27,10 @@ router.get('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const { title, content, isPinned, color } = req.body;
+    const { title, content, isPinned, color, isArchived, isTrashed } = req.body;
     const updatedNote = await Note.findByIdAndUpdate(
       req.params.id,
-      { title, content, isPinned, color },
+      { title, content, isPinned, color, isArchived, isTrashed },
       { new: true }
     );
     if (!updatedNote) return res.status(404).json({ message: 'Note not found' });
