@@ -6,7 +6,7 @@ export default function Sidebar({ currentTab, setCurrentTab, counts = { notes: 0
   ]
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 p-4 hidden md:block select-none">
+    <aside className="w-64 bg-white border-r border-gray-200 p-4 hidden md:block select-none sticky top-16 h-[calc(100vh-4rem)]">
       <nav className="space-y-1">
         {menuItems.map((item) => {
           const isActive = currentTab === item.id
